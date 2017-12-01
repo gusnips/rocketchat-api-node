@@ -14,29 +14,9 @@ The Version of this library is in sync with the rocket.chat release. A version o
 ```bash
 npm install rocketchat-api
 ```
-
-```js
-var RocketChatApi = require('rocketchat').RocketChatApi;
-// OR
-var RocketChatClient = require('rocketchat').RocketChatClient;
-```
-
 This Lib library package the following functions:
 
-## RocketChatApi
-
-- [create client](#create-client)
-- [login](#login)
-- [logout](#logout)
-- [get list of public rooms](#public-rooms)
-- [join a room](#join)
-- [leave a room](#leave)
-- [creating a room](#createRoom)
-- [get all unread messages in a room](#unread-messages)
-- [sending a message](#send-messages)
-
-## [RocketChatClient](#newapi)
-
+## [RocketChatClient](#api)
 - [Miscellaneous](#Miscellaneous)
   - [info](#Miscellaneous.info)
 - [Authentication](#Authentication)
@@ -165,153 +145,67 @@ This Lib library package the following functions:
 Install with the node package manager [npm](http://npmjs.org/):
 
 ```
-$ npm install rocketchat
+$ npm install rocketchat-api
 ```
 
 or
 
 Install via git clone:
 ```
-$ git clone https://github.com/gusnips/rocketchat-node.git
+$ git clone https://github.com/gusnips/rocketchat-api-node.git
 $ cd rocketchat-node
 $ npm install
 ```
 
 ## Examples
 
-### <a id="create-client"></a>Create the rocket-chat client
-
-```
-// rocketchat api wrapper
-var RocketChatApi = require('rocketchat').RocketChatApi;
-// alpha-api versions
-var rocketChatApi = new RocketChatApi('http', config.host, config.port, config.user, config.password);
-// v1-api versions
-var rocketChatApi = new RocketChatApi('http', config.host, config.port, config.user, config.password, "v1");
-
-// direct access to new api
-var RocketChatClient = require('rocketchat').RocketChatClient;
-```
-
-### Obtaining the running rocket-chat version
-
-```
-rocketChatApi.version(function(err,body){
-	if(err)
-		console.log(err);
-	else
-		console.log(body);
-})
-```
-
-### <a id="login"></a>Login rocket-chat
-
-```
-rocketChatApi.login(function(err,body){
-	if(err)
-		console.log(err);
-	else
-		console.log(body);
-})
-```
-
-
-
-You don't have to log in every time, and automatically log on when you call the other interface.
-
-### <a id="logout"></a>Logoff rocket-chat
-
-```
-rocketChatApi.logout(function(err,body){
-	if(err)
-		console.log(err);
-	else
-		console.log(body);
-})
-```
-
-### <a id="public-rooms"></a>Get list of public rooms
-
-```
-rocketChatApi.getPublicRooms(function(err,body){
-	if(err)
-		console.log(err);
-	else
-		console.log(body);
-})
-```
-
-### <a id="join"></a>Join a room
-
-```
-rocketChatApi.joinRoom(roomID ,function(err,body){
-	if(err)
-		console.log(err);
-	else
-		console.log(body);
-})
-```
-
-### <a id="leave"></a>Leave a room
-
-```
-rocketChatApi.leaveRoom(roomID ,function(err,body){
-	if(err)
-		console.log(err);
-	else
-		console.log(body);
-})
-```
-
-
-### <a id="createRoom"></a>Create a room
-
-```
-rocketChatApi.createRoom(roomName ,function(err,body){
-	if(err)
-		console.log(err);
-	else
-		console.log(body);
-})
-```
-
-### <a id="setTopic"></a>Set a rooms topic
+### Basic Usage
 
 ```js
-rocketChatApi.setTopic(roomID, topicName, function(err, body){
-    if(err)
-         console.log(err);
-    else
-        console.log(body);
+const RocketChatApi = require('rocketchat-api')
+```
+
+Now you can either login or instantiate with username and password  
+
+```js
+const rocketChatClient = new RocketChatApi(
+  'https',//protocol
+  'chat.localhost',//host
+  443,//port
+  'myuser',//user
+  'mypassword',//password
+  (err, result, self)=>{//callback function
+    console.info('RC connected', result)
 })
 ```
 
-### <a id="unread-messages"></a>Get all unread messages in a room
+or
 
+```js
+const rocketChatClient = new RocketChatApi('https','chat.localhost',443)
+rocketChatClient.login('myuser','password')
+  .then(rocketChatClientInstance, result)=>{
+      console.info('RC connected')
+  })
+  .catch((err)=>{
+    console.error(err)
+  })
 ```
-rocketChatApi.getUnreadMsg(roomID ,function(err,body){
-	if(err)
-		console.log(err);
-	else
-		console.log(body);
-})
-```
 
+### Using as express middleware
 
-### <a id="send-messages"></a>Sending a message
-
-```
-rocketChatApi.sendMsg(roomID, message, function(err,body){
-	if(err)
-		console.log(err);
-	else
-		console.log(body);
+```js
+app.use(async (req, res, next)=>{
+  req.rocketChatClient = new RocketChatApi('https','chat.localhost',443)
+  // wait for rocket to login before continue in case you want to use it right away
+  await rocketChatClient.login('myusername',',mypassword')
+  next()
 })
 ```
 
 More information can be found by checking [RocektChat REST API](https://rocket.chat/docs/master/developer-guides/rest-api/)
 
-## <a id="newapi"></a>new api
+## <a id="api"></a> API
 
 ### <a id="Miscellaneous"></a>Miscellaneous
 
@@ -320,7 +214,7 @@ More information can be found by checking [RocektChat REST API](https://rocket.c
 A simple method, requires no authentication, that returns information about the server including version information.
 
 ```js
-this.rocketChatClient.miscellaneous.info(function (err, body) {});
+rocketChatClient.miscellaneous.info((err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/miscellaneous/info)](https://rocket.chat/docs/developer-guides/rest-api/miscellaneous/info)
@@ -329,20 +223,20 @@ this.rocketChatClient.miscellaneous.info(function (err, body) {});
 {
   "success": true,
   "info": {
-    "version": "0.47.0-develop",
+    "version": "0.6.0-develop",
     "build": {
-      "nodeVersion": "v4.6.2",
+      "nodeVersion": "v9.2",
       "arch": "x64",
       "platform": "linux",
       "cpus": 4
     },
     "commit": {
       "hash": "5901cc7270e3587101631ee222def950d705c611",
-      "date": "Thu Dec 1 19:08:01 2016 -0200",
-      "author": "Gabriel Engel",
+      "date": "Thu Dec 1 19:08:01 2017 -0200",
+      "author": "Gustavo Salome",
       "subject": "Merge branch 'develop' into experimental",
-      "tag": "0.46.0",
-      "branch": "experimental"
+      "tag": "0.6.0",
+      "branch": "develop"
     }
   }
 }
@@ -353,37 +247,55 @@ this.rocketChatClient.miscellaneous.info(function (err, body) {});
 The authentication with the API is a process that is handled for you automatically when you create a new instance of the client.
 
 ```js
-var rocketChatApi = new RocketChatApi('https', 'my-rocket.chat', 443, 'admin', 'password', function () {
-    // both rest api and realtime api are succesfully authenticated, given user and password are correct
+const rocketChatClient = new RocketChatApi('https', 'chat.localhost', 443, 'admin', 'password', (err, responseBody, self)=>{
+  if(err)
+    return console.error('Error connecting to RocketChat', err)
+  console.info('RocketChat client connect')
+  // self refers to an instance of rocketChatClient, useful if you need subsequent calls
+  // responseBody is an object containing authToken and userId  
 });
 ```
+You can, however, use the provided methods to switch user, or - i.e. if you don't have the credentials at startup time - you can choose a late authentication.  
 
-You can, however, use the provided methods to switch user, or - i.e. if you don't have the credentials at startup time - you can choose a late authentication.
+### Loading stored credentials
+
+You can also use setAuthToken and setUserId to set stored credentials, like this:  
+
+```js
+rocketChatClient.setAuthToken('my-stored-token')
+rocketChatClient.setUserId('my-stored-userId')
+```
 
 Note that the api methods here will only authenticate the Web Api, not the realtime websocket api. For authenticating the realtime api, please [Check here](#Realtime.login).
 
 #### <a id="Authentication.login"></a>login
 
 ```js
-this.rocketChatClient.authentication.login(username, password, function (err, body) {});
+rocketChatClient.login(username, password)
+  .then((body, self)=>{
+    // self is an instance of rocketChatClient,useful if you need subsequent calls
+    console.log(responseBody)
+    // body is an object containing authToken and userId  
+  }).catch((err)=>{
+    console.log(err)
+  })
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/authentication/login)](https://rocket.chat/docs/developer-guides/rest-api/authentication/login)
 
 ```json
 {
-  "status": "success",
-  "data": {
-      "authToken": "9HqLlyZOugoStsXCUfD_0YdwnNnunAJF8V47U3QHXSq",
-      "userId": "aobEdbYhXfu5hkeqG"
-   }
+  "authToken": "9HqLlyZOugoStsXCUfD_0YdwnNnunAJF8V47U3QHXSq",
+  "userId": "aobEdbYhXfu5hkeqG"
 }
 ```
 
 #### <a id="Authentication.logout"></a>logout
 
 ```js
-this.rocketChatClient.authentication.logout(function (err, body) {});
+rocketChatClient.logout()
+  .then((body)=>{})
+  .catch((err)=>{})
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/authentication/logout)](https://rocket.chat/docs/developer-guides/rest-api/authentication/logout)
@@ -404,7 +316,7 @@ this.rocketChatClient.authentication.logout(function (err, body) {});
 Quick information about the authenticated user.
 
 ```js
-this.rocketChatClient.authentication.me(function (err, body) {});
+rocketChatClient.authentication.me((err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/authentication/me)](https://rocket.chat/docs/developer-guides/rest-api/authentication/me)
@@ -435,7 +347,7 @@ this.rocketChatClient.authentication.me(function (err, body) {});
 **NOTE** Due to a funny behavior of rocket.chat not responding to this call, the result is evaluated with a workaround and will always take minimum 500ms!
 
 ```js
-var userToAdd = {
+const userToAdd = {
     "name": "name",
     "email": "email@example.com",
     "password": "anypassyouwant",
@@ -446,7 +358,7 @@ var userToAdd = {
     "requirePasswordChange":false,
     "roles":["user"]
 };
-this.rocketChatClient.users.create(userToAdd, function (err, body) {});
+rocketChatClient.users.create(userToAdd, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/users/create)](https://rocket.chat/docs/developer-guides/rest-api/users/create)
@@ -487,7 +399,7 @@ this.rocketChatClient.users.create(userToAdd, function (err, body) {});
 #### <a id="Users.delete"></a>delete
 
 ```js
-this.rocketChatClient.users.delete(userId, function (err, body) {});
+rocketChatClient.users.delete(userId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/users/delete)](https://rocket.chat/docs/developer-guides/rest-api/users/delete)
@@ -501,7 +413,7 @@ this.rocketChatClient.users.delete(userId, function (err, body) {});
 #### <a id="Users.getPresence"></a>getPresence
 
 ```js
-this.rocketChatClient.users.getPresence(userId, function (err, body) {});
+rocketChatClient.users.getPresence(userId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/users/getpresence)](https://rocket.chat/docs/developer-guides/rest-api/users/getpresence)
@@ -516,9 +428,9 @@ this.rocketChatClient.users.getPresence(userId, function (err, body) {});
 #### <a id="Users.info"></a>info
 
 ```js
-this.rocketChatClient.users.info({userId: userId}, function (err, body) {});
+rocketChatClient.users.info({userId: userId}, (err, body)=>{});
 //or
-this.rocketChatClient.users.info({username: username}, function (err, body) {});
+rocketChatClient.users.info({username: username}, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/users/info)](https://rocket.chat/docs/developer-guides/rest-api/users/info)
@@ -541,8 +453,8 @@ this.rocketChatClient.users.info({username: username}, function (err, body) {});
 #### <a id="Users.list"></a>list
 
 ```js
-this.rocketChatClient.users.list(offset, count, function (err, body) {});
-this.rocketChatClient.users.list(function (err, body) {});
+rocketChatClient.users.list(offset, count, (err, body)=>{});
+rocketChatClient.users.list((err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/users/list)](https://rocket.chat/docs/developer-guides/rest-api/users/list)
@@ -564,7 +476,7 @@ this.rocketChatClient.users.list(function (err, body) {});
 #### <a id="Users.setAvatar"></a>setAvatar
 
 ```js
-this.rocketChatClient.users.setAvatar(userId, avatarUrl, function (err, body) {});
+rocketChatClient.users.setAvatar(userId, avatarUrl, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/users/setavatar)](https://rocket.chat/docs/developer-guides/rest-api/users/setavatar)
@@ -578,7 +490,7 @@ this.rocketChatClient.users.setAvatar(userId, avatarUrl, function (err, body) {}
 #### <a id="Users.update"></a>update
 
 ```js
-this.rocketChatClient.users.update(userId, updateData, function (err, body) {});
+rocketChatClient.users.update(userId, updateData, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/users/update)](https://rocket.chat/docs/developer-guides/rest-api/users/update)
@@ -624,7 +536,7 @@ this.rocketChatClient.users.update(userId, updateData, function (err, body) {});
 Adds all of the users of the Rocket.Chat server to the channel.
 
 ```js
-this.rocketChatClient.channels.addAll(roomId, function (err, body) {});
+rocketChatClient.channels.addAll(roomId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/addall)](https://rocket.chat/docs/developer-guides/rest-api/channels/addall)
@@ -655,7 +567,7 @@ this.rocketChatClient.channels.addAll(roomId, function (err, body) {});
 Gives the role of moderator for a user in the current channel.
 
 ```js
-this.rocketChatClient.channels.addModerator(roomId, userId, function (err, body) {});
+rocketChatClient.channels.addModerator(roomId, userId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/addmoderator)](https://rocket.chat/docs/developer-guides/rest-api/channels/addmoderator)
@@ -671,7 +583,7 @@ this.rocketChatClient.channels.addModerator(roomId, userId, function (err, body)
 Gives the role of owner for a user in the current channel.
 
 ```js
-this.rocketChatClient.channels.addOwner(roomId, userId, function (err, body) {});
+rocketChatClient.channels.addOwner(roomId, userId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/addowner)](https://rocket.chat/docs/developer-guides/rest-api/channels/addowner)
@@ -689,7 +601,7 @@ this.rocketChatClient.channels.addOwner(roomId, userId, function (err, body) {})
 Archives a channel.
 
 ```js
-this.rocketChatClient.channels.archive(roomId, function (err, body) {});
+rocketChatClient.channels.archive(roomId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/archive)](https://rocket.chat/docs/developer-guides/rest-api/channels/archive)
@@ -707,9 +619,9 @@ this.rocketChatClient.channels.archive(roomId, function (err, body) {});
 Cleans up a channel, removing messages from the provided time range.
 
 ```js
-this.rocketChatClient.channels.cleanHistory(roomId, roomId, latest, oldest, function (err, body) {});
+rocketChatClient.channels.cleanHistory(roomId, roomId, latest, oldest, (err, body)=>{});
 // inclusive default value is false, if you want to change that pass the parameter
-this.rocketChatClient.channels.cleanHistory(roomId, roomId, latest, oldest, inclusive, function (err, body) {});
+rocketChatClient.channels.cleanHistory(roomId, roomId, latest, oldest, inclusive, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/cleanhistory)](https://rocket.chat/docs/developer-guides/rest-api/channels/cleanhistory)
@@ -727,7 +639,7 @@ this.rocketChatClient.channels.cleanHistory(roomId, roomId, latest, oldest, incl
 Removes the channel from the user’s list of channels.
 
 ```js
-this.rocketChatClient.channels.close(roomId, function (err, body) {});
+rocketChatClient.channels.close(roomId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/close)](https://rocket.chat/docs/developer-guides/rest-api/channels/close)
@@ -743,7 +655,7 @@ this.rocketChatClient.channels.close(roomId, function (err, body) {});
 Creates a new public channel.
 
 ```js
-this.rocketChatClient.channels.create(roomName, function (err, body) {});
+rocketChatClient.channels.create(roomName, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/create)](https://rocket.chat/docs/developer-guides/rest-api/channels/create)
@@ -774,8 +686,8 @@ Retrieves the integrations which the channel has, requires the permission manage
 And supports the [Offset and Count Query Parameters](https://rocket.chat/docs/developer-guides/rest-api/offset-and-count-info).
 
 ```js
-this.rocketChatClient.channels.getIntegrations(roomId, {/** query options */},function (err, body) {});
-this.rocketChatClient.channels.getIntegrations(roomId, {0, 5}, function (err, body) {});
+rocketChatClient.channels.getIntegrations(roomId, {/** query options */},(err, body)=>{});
+rocketChatClient.channels.getIntegrations(roomId, {0, 5}, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/getintegrations)](https://rocket.chat/docs/developer-guides/rest-api/channels/getintegrations)
@@ -823,8 +735,8 @@ Retrieves the messages from a channel.
 And supports the [Offset and Count Query Parameters](https://rocket.chat/docs/developer-guides/rest-api/offset-and-count-info).
 
 ```js
-this.rocketChatClient.channels.history(roomId, {/** query option here*/}, function (err, body) {});
-this.rocketChatClient.channels.history(roomId, {0, 5}, function (err, body) {});
+rocketChatClient.channels.history(roomId, {/** query option here*/}, (err, body)=>{});
+rocketChatClient.channels.history(roomId, {0, 5}, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/history)](https://rocket.chat/docs/developer-guides/rest-api/channels/history)
@@ -892,7 +804,7 @@ this.rocketChatClient.channels.history(roomId, {0, 5}, function (err, body) {});
 Retrieves the information about the channel.
 
 ```js
-this.rocketChatClient.channels.info(roomId, function (err, body) {});
+rocketChatClient.channels.info(roomId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/info)](https://rocket.chat/docs/developer-guides/rest-api/channels/info)
@@ -924,7 +836,7 @@ this.rocketChatClient.channels.info(roomId, function (err, body) {});
 Adds a user to the channel.
 
 ```js
-this.rocketChatClient.channels.invite(roomId, userId, function (err, body) {});
+rocketChatClient.channels.invite(roomId, userId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/invite)](https://rocket.chat/docs/developer-guides/rest-api/channels/invite)
@@ -953,7 +865,7 @@ this.rocketChatClient.channels.invite(roomId, userId, function (err, body) {});
 Kicks a user from the channel.
 
 ```js
-this.rocketChatClient.channels.kick(roomId, userId, function (err, body) {});
+rocketChatClient.channels.kick(roomId, userId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/kick)](https://rocket.chat/docs/developer-guides/rest-api/channels/kick)
@@ -986,7 +898,7 @@ this.rocketChatClient.channels.kick(roomId, userId, function (err, body) {});
 Causes the callee to be removed from the channel.
 
 ```js
-this.rocketChatClient.channels.leave(roomId, function (err, body) {});
+rocketChatClient.channels.leave(roomId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/leave)](https://rocket.chat/docs/developer-guides/rest-api/channels/leave)
@@ -1020,7 +932,7 @@ Lists all of the channels the calling user has joined.
 
 ```js
 // pass a query object to limit the results
-this.rocketChatClient.channels.listJoined({}, function (err, body) {});
+rocketChatClient.channels.listJoined({}, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/list-joined)](https://rocket.chat/docs/developer-guides/rest-api/channels/list-joined)
@@ -1056,18 +968,18 @@ Lists all of the channels on the server, this method supports the Offset and Cou
 
 ```js
 // get the first items
-this.rocketChatClient.channels.list({}, function (err, body) {});
+rocketChatClient.channels.list({}, (err, body)=>{});
 // get by offset and count
 // first 5 items
-this.rocketChatClient.channels.list({0, 5}, function (err, body) {});
+rocketChatClient.channels.list({0, 5}, (err, body)=>{});
 // third page
-this.rocketChatClient.channels.list({10, 5}, function (err, body) {});
+rocketChatClient.channels.list({10, 5}, (err, body)=>{});
 // find an item using mongo query syntax
-this.rocketChatClient.channels.list({ query : { "name": { "$regex": "thisreallydoesnotexist" } } }, function (err, body) {});
+rocketChatClient.channels.list({ query : { "name": { "$regex": "thisreallydoesnotexist" } } }, (err, body)=>{});
 // sort using mongo sort syntax
-this.rocketChatClient.channels.list({ sort : { "_updatedAt": 1 } }, function (err, body) {});
+rocketChatClient.channels.list({ sort : { "_updatedAt": 1 } }, (err, body)=>{});
 // fielding using mongo field syntax
-this.rocketChatClient.channels.list({ fields : { "name": 1 } }, function (err, body) {});
+rocketChatClient.channels.list({ fields : { "name": 1 } }, (err, body)=>{});
 
 ```
 
@@ -1120,7 +1032,7 @@ this.rocketChatClient.channels.list({ fields : { "name": 1 } }, function (err, b
 Adds the channel back to the user’s list of channels.
 
 ```js
-this.rocketChatClient.channels.open(roomId, function (err, body) {});
+rocketChatClient.channels.open(roomId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/open)](https://rocket.chat/docs/developer-guides/rest-api/channels/open)
@@ -1136,7 +1048,7 @@ this.rocketChatClient.channels.open(roomId, function (err, body) {});
 Removes the role of moderator from a user in the currrent channel.
 
 ```js
-this.rocketChatClient.channels.removeModerator(roomId, userId, function (err, body) {});
+rocketChatClient.channels.removeModerator(roomId, userId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/removemoderator)](https://rocket.chat/docs/developer-guides/rest-api/channels/removemoderator)
@@ -1152,7 +1064,7 @@ this.rocketChatClient.channels.removeModerator(roomId, userId, function (err, bo
 Removes the role of owner from a user in the currrent channel.
 
 ```js
-this.rocketChatClient.channels.removeOwner(roomId, userId, function (err, body) {});
+rocketChatClient.channels.removeOwner(roomId, userId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/removeowner)](https://rocket.chat/docs/developer-guides/rest-api/channels/removeowner)
@@ -1168,7 +1080,7 @@ this.rocketChatClient.channels.removeOwner(roomId, userId, function (err, body) 
 Changes the name of the channel.
 
 ```js
-this.rocketChatClient.channels.rename(roomId, newName, function (err, body) {});
+rocketChatClient.channels.rename(roomId, newName, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/rename)](https://rocket.chat/docs/developer-guides/rest-api/channels/rename)
@@ -1201,7 +1113,7 @@ this.rocketChatClient.channels.rename(roomId, newName, function (err, body) {});
 Sets the description for the channel.
 
 ```js
-this.rocketChatClient.channels.setDescription(roomId, description, function (err, body) {});
+rocketChatClient.channels.setDescription(roomId, description, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/setdescription)](https://rocket.chat/docs/developer-guides/rest-api/channels/setdescription)
@@ -1218,7 +1130,7 @@ this.rocketChatClient.channels.setDescription(roomId, description, function (err
 Sets the code required to join the channel.
 
 ```js
-this.rocketChatClient.channels.setJoinCode(roomId, joinCode, function (err, body) {});
+rocketChatClient.channels.setJoinCode(roomId, joinCode, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/setjoincode)](https://rocket.chat/docs/developer-guides/rest-api/channels/setjoincode)
@@ -1253,7 +1165,7 @@ this.rocketChatClient.channels.setJoinCode(roomId, joinCode, function (err, body
 Sets the purpose/description for the channel.
 
 ```js
-this.rocketChatClient.channels.setPurpose(roomId, purpose, function (err, body) {});
+rocketChatClient.channels.setPurpose(roomId, purpose, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/setpurpose)](https://rocket.chat/docs/developer-guides/rest-api/channels/setpurpose)
@@ -1270,7 +1182,7 @@ this.rocketChatClient.channels.setPurpose(roomId, purpose, function (err, body) 
 Sets whether the channel is read only or not.
 
 ```js
-this.rocketChatClient.channels.setReadOnly(roomId, readonly, function (err, body) {});
+rocketChatClient.channels.setReadOnly(roomId, readonly, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/setreadonly)](https://rocket.chat/docs/developer-guides/rest-api/channels/setreadonly)
@@ -1306,7 +1218,7 @@ this.rocketChatClient.channels.setReadOnly(roomId, readonly, function (err, body
 Sets the topic for the channel.
 
 ```js
-this.rocketChatClient.channels.setTopic(roomId, topic, function (err, body) {});
+rocketChatClient.channels.setTopic(roomId, topic, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/settopic)](https://rocket.chat/docs/developer-guides/rest-api/channels/settopic)
@@ -1324,7 +1236,7 @@ this.rocketChatClient.channels.setTopic(roomId, topic, function (err, body) {});
 Unarchives a channel.
 
 ```js
-this.rocketChatClient.channels.unarchive(roomId, topic, function (err, body) {});
+rocketChatClient.channels.unarchive(roomId, topic, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/channels/unarchive)](https://rocket.chat/docs/developer-guides/rest-api/channels/unarchive)
@@ -1342,7 +1254,7 @@ this.rocketChatClient.channels.unarchive(roomId, topic, function (err, body) {})
 Adds all of the users of the Rocket.Chat server to the group.
 
 ```js
-this.rocketChatClient.groups.addAll(roomId, function (err, body) {});
+rocketChatClient.groups.addAll(roomId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/addall)](https://rocket.chat/docs/developer-guides/rest-api/groups/addall)
@@ -1373,7 +1285,7 @@ this.rocketChatClient.groups.addAll(roomId, function (err, body) {});
 Gives the role of moderator for a user in the current group.
 
 ```js
-this.rocketChatClient.groups.addModerator(roomId, userId, function (err, body) {});
+rocketChatClient.groups.addModerator(roomId, userId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/addmoderator)](https://rocket.chat/docs/developer-guides/rest-api/groups/addmoderator)
@@ -1389,7 +1301,7 @@ this.rocketChatClient.groups.addModerator(roomId, userId, function (err, body) {
 Gives the role of owner for a user in the current group.
 
 ```js
-this.rocketChatClient.groups.addOwner(roomId, userId, function (err, body) {});
+rocketChatClient.groups.addOwner(roomId, userId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/addowner)](https://rocket.chat/docs/developer-guides/rest-api/groups/addowner)
@@ -1407,7 +1319,7 @@ this.rocketChatClient.groups.addOwner(roomId, userId, function (err, body) {});
 Archives a private group, only if you’re part of the group.
 
 ```js
-this.rocketChatClient.groups.archive(roomId, function (err, body) {});
+rocketChatClient.groups.archive(roomId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/archive)](https://rocket.chat/docs/developer-guides/rest-api/groups/archive)
@@ -1425,7 +1337,7 @@ this.rocketChatClient.groups.archive(roomId, function (err, body) {});
 Removes the group from the user’s list of groups.
 
 ```js
-this.rocketChatClient.groups.close(roomId, function (err, body) {});
+rocketChatClient.groups.close(roomId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/close)](https://rocket.chat/docs/developer-guides/rest-api/groups/close)
@@ -1441,7 +1353,7 @@ this.rocketChatClient.groups.close(roomId, function (err, body) {});
 Creates a new private group, optionally including specified users. The group creator is always included.
 
 ```js
-this.rocketChatClient.groups.create(roomName, function (err, body) {});
+rocketChatClient.groups.create(roomName, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/create)](https://rocket.chat/docs/developer-guides/rest-api/groups/create)
@@ -1472,8 +1384,8 @@ Retrieves the integrations which the group has, requires the permission manage-i
 And supports the [Offset and Count Query Parameters](https://rocket.chat/docs/developer-guides/rest-api/offset-and-count-info).
 
 ```js
-this.rocketChatClient.groups.getIntegrations(roomId, {/** query options */},function (err, body) {});
-this.rocketChatClient.groups.getIntegrations(roomId, {0, 5}, function (err, body) {});
+rocketChatClient.groups.getIntegrations(roomId, {/** query options */},(err, body)=>{});
+rocketChatClient.groups.getIntegrations(roomId, {0, 5}, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/getintegrations)](https://rocket.chat/docs/developer-guides/rest-api/groups/getintegrations)
@@ -1521,8 +1433,8 @@ Retrieves the messages from a private group, only if you’re part of the group.
 And supports the [Offset and Count Query Parameters](https://rocket.chat/docs/developer-guides/rest-api/offset-and-count-info).
 
 ```js
-this.rocketChatClient.groups.history(roomId, {/** query option here*/}, function (err, body) {});
-this.rocketChatClient.groups.history(roomId, {0, 5}, function (err, body) {});
+rocketChatClient.groups.history(roomId, {/** query option here*/}, (err, body)=>{});
+rocketChatClient.groups.history(roomId, {0, 5}, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/history)](https://rocket.chat/docs/developer-guides/rest-api/groups/history)
@@ -1590,7 +1502,7 @@ this.rocketChatClient.groups.history(roomId, {0, 5}, function (err, body) {});
 Retrieves the information about the private group, only if you’re part of the group.
 
 ```js
-this.rocketChatClient.groups.info(roomId, function (err, body) {});
+rocketChatClient.groups.info(roomId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/info)](https://rocket.chat/docs/developer-guides/rest-api/groups/info)
@@ -1622,7 +1534,7 @@ this.rocketChatClient.groups.info(roomId, function (err, body) {});
 Adds a user to the private group.
 
 ```js
-this.rocketChatClient.groups.invite(roomId, userId, function (err, body) {});
+rocketChatClient.groups.invite(roomId, userId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/invite)](https://rocket.chat/docs/developer-guides/rest-api/groups/invite)
@@ -1651,7 +1563,7 @@ this.rocketChatClient.groups.invite(roomId, userId, function (err, body) {});
 Removes a user from the private group.
 
 ```js
-this.rocketChatClient.groups.kick(roomId, userId, function (err, body) {});
+rocketChatClient.groups.kick(roomId, userId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/kick)](https://rocket.chat/docs/developer-guides/rest-api/groups/kick)
@@ -1684,7 +1596,7 @@ this.rocketChatClient.groups.kick(roomId, userId, function (err, body) {});
 Causes the callee to be removed from the private group, if they’re part of it and are not the last owner.
 
 ```js
-this.rocketChatClient.groups.leave(roomId, function (err, body) {});
+rocketChatClient.groups.leave(roomId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/leave)](https://rocket.chat/docs/developer-guides/rest-api/groups/leave)
@@ -1719,18 +1631,18 @@ Lists all of the private groups the calling user has joined, this method support
 
 ```js
 // get the first items
-this.rocketChatClient.groups.list({}, function (err, body) {});
+rocketChatClient.groups.list({}, (err, body)=>{});
 // get by offset and count
 // first 5 items
-this.rocketChatClient.groups.list({0, 5}, function (err, body) {});
+rocketChatClient.groups.list({0, 5}, (err, body)=>{});
 // third page
-this.rocketChatClient.groups.list({10, 5}, function (err, body) {});
+rocketChatClient.groups.list({10, 5}, (err, body)=>{});
 // find an item using mongo query syntax
-this.rocketChatClient.groups.list({ query : { "name": { "$regex": "thisreallydoesnotexist" } } }, function (err, body) {});
+rocketChatClient.groups.list({ query : { "name": { "$regex": "thisreallydoesnotexist" } } }, (err, body)=>{});
 // sort using mongo sort syntax
-this.rocketChatClient.groups.list({ sort : { "_updatedAt": 1 } }, function (err, body) {});
+rocketChatClient.groups.list({ sort : { "_updatedAt": 1 } }, (err, body)=>{});
 // fielding using mongo field syntax
-this.rocketChatClient.groups.list({ fields : { "name": 1 } }, function (err, body) {});
+rocketChatClient.groups.list({ fields : { "name": 1 } }, (err, body)=>{});
 
 ```
 
@@ -1783,7 +1695,7 @@ this.rocketChatClient.groups.list({ fields : { "name": 1 } }, function (err, bod
 Adds the private group back to the user’s list of private groups.
 
 ```js
-this.rocketChatClient.groups.open(roomId, function (err, body) {});
+rocketChatClient.groups.open(roomId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/open)](https://rocket.chat/docs/developer-guides/rest-api/groups/open)
@@ -1799,7 +1711,7 @@ this.rocketChatClient.groups.open(roomId, function (err, body) {});
 Removes the role of moderator from a user in the currrent group.
 
 ```js
-this.rocketChatClient.groups.removeModerator(roomId, userId, function (err, body) {});
+rocketChatClient.groups.removeModerator(roomId, userId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/removemoderator)](https://rocket.chat/docs/developer-guides/rest-api/groups/removemoderator)
@@ -1815,7 +1727,7 @@ this.rocketChatClient.groups.removeModerator(roomId, userId, function (err, body
 Removes the role of owner from a user in the current group.
 
 ```js
-this.rocketChatClient.groups.removeOwner(roomId, userId, function (err, body) {});
+rocketChatClient.groups.removeOwner(roomId, userId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/removeowner)](https://rocket.chat/docs/developer-guides/rest-api/groups/removeowner)
@@ -1831,7 +1743,7 @@ this.rocketChatClient.groups.removeOwner(roomId, userId, function (err, body) {}
 Changes the name of the private group.
 
 ```js
-this.rocketChatClient.groups.rename(roomId, newName, function (err, body) {});
+rocketChatClient.groups.rename(roomId, newName, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/rename)](https://rocket.chat/docs/developer-guides/rest-api/groups/rename)
@@ -1864,7 +1776,7 @@ this.rocketChatClient.groups.rename(roomId, newName, function (err, body) {});
 Sets the description for the private group.
 
 ```js
-this.rocketChatClient.groups.setDescription(roomId, description, function (err, body) {});
+rocketChatClient.groups.setDescription(roomId, description, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/setdescription)](https://rocket.chat/docs/developer-guides/rest-api/groups/setdescription)
@@ -1881,7 +1793,7 @@ this.rocketChatClient.groups.setDescription(roomId, description, function (err, 
 Sets the purpose/description for the private group.
 
 ```js
-this.rocketChatClient.groups.setPurpose(roomId, purpose, function (err, body) {});
+rocketChatClient.groups.setPurpose(roomId, purpose, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/setpurpose)](https://rocket.chat/docs/developer-guides/rest-api/groups/setpurpose)
@@ -1898,7 +1810,7 @@ this.rocketChatClient.groups.setPurpose(roomId, purpose, function (err, body) {}
 Sets whether the group is read only or not.
 
 ```js
-this.rocketChatClient.groups.setReadOnly(roomId, readonly, function (err, body) {});
+rocketChatClient.groups.setReadOnly(roomId, readonly, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/setreadonly)](https://rocket.chat/docs/developer-guides/rest-api/groups/setreadonly)
@@ -1934,7 +1846,7 @@ this.rocketChatClient.groups.setReadOnly(roomId, readonly, function (err, body) 
 Sets the topic for the private group.
 
 ```js
-this.rocketChatClient.groups.setTopic(roomId, topic, function (err, body) {});
+rocketChatClient.groups.setTopic(roomId, topic, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/settopic)](https://rocket.chat/docs/developer-guides/rest-api/groups/settopic)
@@ -1952,7 +1864,7 @@ this.rocketChatClient.groups.setTopic(roomId, topic, function (err, body) {});
 Unarchives a private group.
 
 ```js
-this.rocketChatClient.groups.unarchive(roomId, topic, function (err, body) {});
+rocketChatClient.groups.unarchive(roomId, topic, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/groups/unarchive)](https://rocket.chat/docs/developer-guides/rest-api/groups/unarchive)
@@ -1969,7 +1881,7 @@ this.rocketChatClient.groups.unarchive(roomId, topic, function (err, body) {});
 Removes the direct message from the user’s list of direct messages.
 
 ```js
-this.rocketChatClient.im.close(roomId, function(err, body) {});
+rocketChatClient.im.close(roomId, (err, body)=>{});
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/im/close)](https://rocket.chat/docs/developer-guides/rest-api/im/close)
@@ -1984,7 +1896,7 @@ this.rocketChatClient.im.close(roomId, function(err, body) {});
 Retrieves the messages from a direct message.
 
 ```js
-this.rocketchatClient.im.history(historyOpts, callback);
+rocketChatClient.im.history(historyOpts, callback);
 ```
 
 [Result(https://rocket.chat/docs/developer-guides/rest-api/im/history)](https://rocket.chat/docs/developer-guides/rest-api/im/history)
@@ -2052,7 +1964,7 @@ this.rocketchatClient.im.history(historyOpts, callback);
 Retrieves the messages from any direct message in the server, this method supports the Offset and Count Query Parameters.
 
 ```js
-this.rocketChatClient.im.messagesOthers(roomId, callback);
+rocketChatClient.im.messagesOthers(roomId, callback);
 ```
 [Result(https://rocket.chat/docs/developer-guides/rest-api/im/messages-others)](https://rocket.chat/docs/developer-guides/rest-api/im/messages-others)
 
@@ -2119,7 +2031,7 @@ this.rocketChatClient.im.messagesOthers(roomId, callback);
 Lists all of the direct messages in the server, requires the permission view-room-administration permission and this method supports the Offset and Count Query Parameters.
 
 ```js
-this.rocketChatClient.im.listEveryone({ offset = 0, count = 0, sort = undefined, fields = undefined, query = undefined}, callback);
+rocketChatClient.im.listEveryone({ offset = 0, count = 0, sort = undefined, fields = undefined, query = undefined}, callback);
 ```
 
 [Result(https://rocket.chat/docs/developer-guides/rest-api/im/list-everyone)](https://rocket.chat/docs/developer-guides/rest-api/im/list-everyone)
@@ -2171,7 +2083,7 @@ this.rocketChatClient.im.listEveryone({ offset = 0, count = 0, sort = undefined,
 Lists all of the direct messages the calling user has joined, this method supports the Offset and Count Query Parameters.
 
 ```js
-this.rocketChatClient.im.list({ offset = 0, count = 0, sort = undefined, fields = undefined, query = undefined}, callback);
+rocketChatClient.im.list({ offset = 0, count = 0, sort = undefined, fields = undefined, query = undefined}, callback);
 ```
 
 [Result(https://rocket.chat/docs/developer-guides/rest-api/im/list)]([Result(https://rocket.chat/docs/developer-guides/rest-api/im/list)]())
@@ -2223,7 +2135,7 @@ this.rocketChatClient.im.list({ offset = 0, count = 0, sort = undefined, fields 
 Adds the direct message back to the user’s list of direct messages.
 
 ```js
-this.rocketChatClient.im.open(roomId, callback);
+rocketChatClient.im.open(roomId, callback);
 ```
 
 [Result(https://rocket.chat/docs/developer-guides/rest-api/im/open)](https://rocket.chat/docs/developer-guides/rest-api/im/open)
@@ -2240,7 +2152,7 @@ this.rocketChatClient.im.open(roomId, callback);
 Sets the topic for the direct message.
 
 ```js
-this.rocketChatClient.im.setTopic(roomId, newTopic, callback);
+rocketChatClient.im.setTopic(roomId, newTopic, callback);
 ```
 
 [Result(https://rocket.chat/docs/developer-guides/rest-api/im/settopic)](https://rocket.chat/docs/developer-guides/rest-api/im/settopic)
@@ -2258,7 +2170,7 @@ this.rocketChatClient.im.setTopic(roomId, newTopic, callback);
 #### <a id="Chat.delete"></a>delete
 
 ```js
-this.rocketChatClient.chat.delete({ roomId, msgId }, callback);
+rocketChatClient.chat.delete({ roomId, msgId }, callback);
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/chat/delete)](https://rocket.chat/docs/developer-guides/rest-api/chat/delete)
@@ -2276,7 +2188,7 @@ this.rocketChatClient.chat.delete({ roomId, msgId }, callback);
 Post a chat message
 
 ```js
-this.rocketChatClient.chat.postMessage({ roomId : roomId, text : message }, callback);
+rocketChatClient.chat.postMessage({ roomId : roomId, text : message }, callback);
 ```
 
 The passed object is equivalent to the [payload](https://rocket.chat/docs/developer-guides/rest-api/chat/postmessage#payload) from the documentation.
@@ -2308,7 +2220,7 @@ The passed object is equivalent to the [payload](https://rocket.chat/docs/develo
 #### <a id="Chat.update"></a>update
 
 ```js
-this.rocketChatClient.chat.update({ roomId, msgId, text: updatedText }, callback);
+rocketChatClient.chat.update({ roomId, msgId, text: updatedText }, callback);
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/chat/update)](https://rocket.chat/docs/developer-guides/rest-api/chat/update)
@@ -2342,7 +2254,7 @@ this.rocketChatClient.chat.update({ roomId, msgId, text: updatedText }, callback
 Gets the setting for the provided _id.
 
 ```js
-this.rocketChatClient.settings.get(_id, callback);
+rocketChatClient.settings.get(_id, callback);
 ```
 
 [Result(https://rocket.chat/docs/developer-guides/rest-api/settings/get)](https://rocket.chat/docs/developer-guides/rest-api/settings/get)
@@ -2359,7 +2271,7 @@ this.rocketChatClient.settings.get(_id, callback);
 Updates the setting for the provided _id.
 
 ```js
-this.rocketChatClient.settings.update(id, value, callback);
+rocketChatClient.settings.update(id, value, callback);
 ```
 
 [Result(https://rocket.chat/docs/developer-guides/rest-api/settings/update)](https://rocket.chat/docs/developer-guides/rest-api/settings/update)
@@ -2380,7 +2292,7 @@ Creates an integration, if the callee has the permission.
 - channel: The channel, group, or @username. Can also be all_public_channels, all_private_groups, or all_direct_messages. Comma separated for more than one.
 
 ```js
-this.rocketChatClient.integration.create({
+rocketChatClient.integration.create({
             "type": "webhook-outgoing",
             "name": "Testing via REST API",
             "enabled": false,
@@ -2424,7 +2336,7 @@ this.rocketChatClient.integration.create({
 Lists all of the integrations on the server, this method supports the Offset and Count Query Parameters.
 
 ```js
-this.rocketChatClient.integration.list({}, callback);
+rocketChatClient.integration.list({}, callback);
 ```
 
 [Result (https://rocket.chat/docs/developer-guides/rest-api/integration/list)](https://rocket.chat/docs/developer-guides/rest-api/integration/list)
@@ -2495,7 +2407,7 @@ this.rocketChatClient.integration.list({}, callback);
 Removes an integration from the server.
 
 ```js
-this.rocketChatClient.integration.remove({
+rocketChatClient.integration.remove({
   type,
   integrationId
 }, callback);
@@ -2554,7 +2466,7 @@ Subscribe to notification. A notification seems to be a mention in a channel. Th
 
 ```js
 
-this.rocketChatClient.notify.user.onNotification(userId, callback);
+rocketChatClient.notify.user.onNotification(userId, callback);
 
 ```
 
@@ -2594,7 +2506,7 @@ Subscribe to new messages in a room.
 
 ```js
 
-this.rocketChatClient.notify.room.onChanged(roomId, callback);
+rocketChatClient.notify.room.onChanged(roomId, callback);
 
 ```
 
@@ -2612,31 +2524,6 @@ Result
 }
 
 ```
-
-## Options
-
-RocketChatApi Options:
-
-- protocol`<string>`: Typically 'http:' or 'https:'
-- host`<string>`: The hostname for your jira server
-- port`<int>`: The port your jira server is listening on (probably 80 or 443)
-- username`<string>`: The username to log in with
-- password`<string>`: Keep it secret, keep it safe
-
-## Implemented APIs
-
-- Authentication
-- HTTP
-- OAuth(comming soon)
-- Room
-- get public rooms
-- join a room
-- leave a room
-- Messages
-- get unread messages from a room
-- send messages to a room
-- Set Topic for Room
-
 
 ## TODO
 

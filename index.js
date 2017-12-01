@@ -1,3 +1,2 @@
 
-exports.RocketChatApi = require("./lib/rocket-chat").RocketChatApi;
-exports.RocketChatClient = require("./lib/rocketChat").RocketChatClient;
+exports = require("./lib/rocketChat").RocketChatClient;
