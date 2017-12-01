@@ -1,2 +1,2 @@
 
-exports = require("./lib/rocketChat").RocketChatClient;
+module.exports = require("./lib/rocketChat").RocketChatClient;
