@@ -9,11 +9,69 @@ RocketChat REST API document can be found [here](https://rocket.chat/docs/develo
 
 The Version of this library is in sync with the rocket.chat release. A version of 0.57 means this release was tested against the official docker image of rocket.chat:0.57.
 
-## getting started
+## Installation
+
+Install with the node package manager [npm](http://npmjs.org/):
 
 ```bash
-npm install rocketchat-api
+$ npm install rocketchat-api
 ```
+
+or
+
+Install via git clone:
+```
+$ git clone https://github.com/gusnips/rocketchat-api-node.git
+$ cd rocketchat-node
+$ npm install
+```
+
+## Getting Started
+
+### Basic Usage
+
+```js
+const RocketChatApi = require('rocketchat-api')
+```
+
+Now you can either login or instantiate with username and password  
+
+```js
+const rocketChatClient = new RocketChatApi(
+  'https',//protocol
+  'chat.localhost',//host
+  443,//port
+  'myuser',//user
+  'mypassword',//password
+  (err, result, self)=>{//callback function
+    console.info('RC connected', result)
+})
+```
+
+or
+
+```js
+const rocketChatClient = new RocketChatApi('https','chat.localhost',443)
+rocketChatClient.login('myuser','password')
+  .then(rocketChatClientInstance, result)=>{
+      console.info('RC connected')
+  })
+  .catch((err)=>{
+    console.error(err)
+  })
+```
+
+### Using as express middleware
+
+```js
+app.use(async (req, res, next)=>{
+  req.rocketChatClient = new RocketChatApi('https','chat.localhost',443)
+  // wait for rocket to login before continue in case you want to use it right away
+  await rocketChatClient.login('myusername',',mypassword')
+  next()
+})
+```
+
 This Lib library package the following functions:
 
 ## [RocketChatClient](#api)
@@ -139,73 +197,9 @@ This Lib library package the following functions:
       - [notification](#Subscriptions.stream-notify-user.notification)
     - [stream-room-messages](#Subscriptions.stream-room-messages)
 
-
-## Installation
-
-Install with the node package manager [npm](http://npmjs.org/):
-
-```
-$ npm install rocketchat-api
-```
-
-or
-
-Install via git clone:
-```
-$ git clone https://github.com/gusnips/rocketchat-api-node.git
-$ cd rocketchat-node
-$ npm install
-```
-
-## Examples
-
-### Basic Usage
-
-```js
-const RocketChatApi = require('rocketchat-api')
-```
-
-Now you can either login or instantiate with username and password  
-
-```js
-const rocketChatClient = new RocketChatApi(
-  'https',//protocol
-  'chat.localhost',//host
-  443,//port
-  'myuser',//user
-  'mypassword',//password
-  (err, result, self)=>{//callback function
-    console.info('RC connected', result)
-})
-```
-
-or
-
-```js
-const rocketChatClient = new RocketChatApi('https','chat.localhost',443)
-rocketChatClient.login('myuser','password')
-  .then(rocketChatClientInstance, result)=>{
-      console.info('RC connected')
-  })
-  .catch((err)=>{
-    console.error(err)
-  })
-```
-
-### Using as express middleware
-
-```js
-app.use(async (req, res, next)=>{
-  req.rocketChatClient = new RocketChatApi('https','chat.localhost',443)
-  // wait for rocket to login before continue in case you want to use it right away
-  await rocketChatClient.login('myusername',',mypassword')
-  next()
-})
-```
+## <a id="api"></a> API
 
 More information can be found by checking [RocektChat REST API](https://rocket.chat/docs/master/developer-guides/rest-api/)
-
-## <a id="api"></a> API
 
 ### <a id="Miscellaneous"></a>Miscellaneous
 
