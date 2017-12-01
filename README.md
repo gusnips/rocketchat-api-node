@@ -38,12 +38,12 @@ Now you can either login or instantiate with username and password
 
 ```js
 const rocketChatClient = new RocketChatApi(
-  'https',//protocol
-  'chat.localhost',//host
-  443,//port
-  'myuser',//user
-  'mypassword',//password
-  (err, result, self)=>{//callback function
+  'https',
+  'chat.localhost',
+  443,
+  'myuser',
+  'mypassword',
+  (err, result)=>{
     console.info('RC connected', result)
 })
 ```
