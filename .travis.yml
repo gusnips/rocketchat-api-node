@@ -1,0 +1,27 @@
+sudo: required
+
+services:
+  - docker
+  
+language: node_js
+node_js:
+  - "7"
+  - "6"
+  
+before_install:
+  - ./test/setup-testenv.sh
+
+deploy:
+  provider: npm
+  email: 1245712564@qq.com
+  api_key: $NPM_TOKEN
+  on:
+    tags: true
+
+install:
+  - npm install -g mocha
+  - npm install
+
+script:
+  - npm run test-and-coverage
+  - cat ./coverage/lcov.info | ./node_modules/.bin/codacy-coverage && rm -rf ./coverage
