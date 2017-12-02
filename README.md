@@ -53,7 +53,7 @@ or
 ```js
 const rocketChatClient = new RocketChatApi('https','chat.localhost',443)
 rocketChatClient.login('myuser','password')
-  .then(rocketChatClientInstance, result)=>{
+  .then(result)=>{
       console.info('RC connected')
   })
   .catch((err)=>{
@@ -67,7 +67,7 @@ rocketChatClient.login('myuser','password')
 app.use(async (req, res, next)=>{
   req.rocketChatClient = new RocketChatApi('https','chat.localhost',443)
   // wait for rocket to login before continue in case you want to use it right away
-  await rocketChatClient.login('myusername',',mypassword')
+  const loginResponse=await rocketChatClient.login('myusername',',mypassword')
   next()
 })
 ```
@@ -268,7 +268,7 @@ Note that the api methods here will only authenticate the Web Api, not the realt
 rocketChatClient.login(username, password)
   .then((body, self)=>{
     // self is an instance of rocketChatClient,useful if you need subsequent calls
-    console.log(responseBody)
+    console.log(body)
     // body is an object containing authToken and userId  
   }).catch((err)=>{
     console.log(err)
