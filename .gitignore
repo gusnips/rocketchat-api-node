@@ -7,6 +7,7 @@
 .idea/
 tsconfig.json
 jsconfig.json
+*.iml
 
 ### Node ###
 # Logs

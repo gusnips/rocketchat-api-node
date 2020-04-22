@@ -306,6 +306,14 @@ describe("groups", () => {
             });
         });
 
+        it("Retrieves the roles about the private group, " +
+            "result should be success", () => {
+            return co(function *() {
+                let rolesResult = yield rocketChatClient.groups.roles(createGroupId);
+                rolesResult.success.should.equal(true);
+            });
+        });
+
         it("Changes the name of the private group. result should be success, and group name should equal to new name", () => {
             return co(function *() {
                 let newGroupName = "new-group-name-"+Date.now();
