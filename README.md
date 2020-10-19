@@ -45,7 +45,7 @@ const rocketChatClient = new RocketChatApi(
   'mypassword',
   {
     timeout: 1000
-  }
+  },
   (err, result)=>{
     console.info('RC connected', result)
 })
